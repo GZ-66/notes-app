@@ -11,6 +11,13 @@ export const CloudSettingsModal: React.FC = () => {
   const [key, setKey] = useState(cloudKey);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
+  React.useEffect(() => {
+    if (isCloudModalOpen) {
+      setUrl(cloudUrl);
+      setKey(cloudKey);
+    }
+  }, [isCloudModalOpen, cloudUrl, cloudKey]);
+
   if (!isCloudModalOpen) return null;
 
   const handleSave = (e: React.FormEvent) => {

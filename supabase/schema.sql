@@ -50,3 +50,8 @@ $$ language plpgsql;
 create trigger trigger_notes_updated_at
   before update on public.notes
   for each row execute function public.handle_updated_at();
+
+-- 5. Grant permissions to authenticated and anon roles
+grant usage on schema public to anon, authenticated;
+grant all on table public.notes to anon, authenticated;
+

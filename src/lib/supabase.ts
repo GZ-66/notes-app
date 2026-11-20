@@ -3,12 +3,31 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 const STORAGE_KEY_URL = 'notesapp_supabase_url';
 const STORAGE_KEY_ANON = 'notesapp_supabase_key';
 
-export function getSupabaseCredentials(): { url: string; key: string } {
-  const envUrl = (import.meta as any).env?.VITE_SUPABASE_URL || '';
-  const envKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '';
+export function normalizeSupabaseUrl(rawUrl: string): string {
+  if (!rawUrl) return '';
+  let url = rawUrl.trim();
 
-  const storedUrl = localStorage.getItem(STORAGE_KEY_URL) || '';
-  const storedKey = localStorage.getItem(STORAGE_KEY_ANON) || '';
+  // If user pasted dashboard project URL: https://supabase.com/dashboard/project/fuixflikrflhxzjeixil
+  const dashboardMatch = url.match(/supabase\.com\/dashboard\/project\/([a-zA-Z0-9_-]+)/);
+  if (dashboardMatch) {
+    return `https://${dashboardMatch[1]}.supabase.co`;
+  }
+
+  // If user pasted without protocol: abc.supabase.co
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = `https://${url}`;
+  }
+
+  // Strip trailing slashes
+  return url.replace(/\/+$/, '');
+}
+
+export function getSupabaseCredentials(): { url: string; key: string } {
+  const envUrl = normalizeSupabaseUrl((import.meta as any).env?.VITE_SUPABASE_URL || '');
+  const envKey = ((import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '').trim();
+
+  const storedUrl = normalizeSupabaseUrl(localStorage.getItem(STORAGE_KEY_URL) || '');
+  const storedKey = (localStorage.getItem(STORAGE_KEY_ANON) || '').trim();
 
   return {
     url: storedUrl || envUrl,
@@ -43,14 +62,17 @@ export function getSupabaseClient(): SupabaseClient | null {
 }
 
 export function saveSupabaseCredentials(url: string, key: string) {
-  if (url) {
-    localStorage.setItem(STORAGE_KEY_URL, url.trim());
+  const cleanedUrl = normalizeSupabaseUrl(url);
+  const cleanedKey = key.trim();
+
+  if (cleanedUrl) {
+    localStorage.setItem(STORAGE_KEY_URL, cleanedUrl);
   } else {
     localStorage.removeItem(STORAGE_KEY_URL);
   }
 
-  if (key) {
-    localStorage.setItem(STORAGE_KEY_ANON, key.trim());
+  if (cleanedKey) {
+    localStorage.setItem(STORAGE_KEY_ANON, cleanedKey);
   } else {
     localStorage.removeItem(STORAGE_KEY_ANON);
   }

@@ -26,12 +26,20 @@ export const AuthModal: React.FC = () => {
       return;
     }
 
+    const formatAuthError = (err: Error) => {
+      const msg = err.message || '';
+      if (msg.includes('fetch') || msg.includes('NetworkError') || msg.includes('network')) {
+        return 'Network connection failed. If using Brave Shields or an adblocker/VPN, ensure requests to supabase.co are allowed, or verify your Supabase URL in Settings.';
+      }
+      return msg;
+    };
+
     setLoading(true);
     if (mode === 'signin') {
       const { error } = await signInWithEmail(email, password);
       setLoading(false);
       if (error) {
-        setErrorMsg(error.message);
+        setErrorMsg(formatAuthError(error));
       } else {
         setIsAuthModalOpen(false);
       }
@@ -39,7 +47,7 @@ export const AuthModal: React.FC = () => {
       const { error } = await signUpWithEmail(email, password);
       setLoading(false);
       if (error) {
-        setErrorMsg(error.message);
+        setErrorMsg(formatAuthError(error));
       } else {
         setInfoMsg('Account created! Please check your email inbox to confirm registration.');
       }
