@@ -9,6 +9,7 @@ interface AuthContextType {
   isCloudConfigured: boolean;
   signInWithEmail: (email: string, pass: string) => Promise<{ error: Error | null }>;
   signUpWithEmail: (email: string, pass: string) => Promise<{ error: Error | null }>;
+  signInWithGoogle: () => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   updateCloudSettings: (url: string, key: string) => void;
   cloudUrl: string;
@@ -68,6 +69,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { error };
   };
 
+  const signInWithGoogle = async () => {
+    const supabase = getSupabaseClient();
+    if (!supabase) return { error: new Error('Cloud backend is not configured.') };
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin,
+      },
+    });
+    return { error };
+  };
+
   const signOut = async () => {
     const supabase = getSupabaseClient();
     if (supabase) {
@@ -91,6 +104,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isCloudConfigured,
         signInWithEmail,
         signUpWithEmail,
+        signInWithGoogle,
         signOut,
         updateCloudSettings,
         cloudUrl: cloudCredentials.url,

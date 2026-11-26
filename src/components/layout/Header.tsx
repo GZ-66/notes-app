@@ -112,8 +112,18 @@ export const Header: React.FC = () => {
         >
           {user ? (
             <>
-              <UserIcon className="w-3.5 h-3.5 text-blue-500" />
-              <span className="max-w-[100px] truncate">{user.email?.split('@')[0]}</span>
+              {user.user_metadata?.avatar_url ? (
+                <img
+                  src={user.user_metadata.avatar_url}
+                  alt={user.user_metadata.full_name || 'avatar'}
+                  className="w-4 h-4 rounded-full object-cover"
+                />
+              ) : (
+                <UserIcon className="w-3.5 h-3.5 text-blue-500" />
+              )}
+              <span className="max-w-[100px] truncate">
+                {user.user_metadata?.full_name || user.email?.split('@')[0]}
+              </span>
             </>
           ) : (
             <>
